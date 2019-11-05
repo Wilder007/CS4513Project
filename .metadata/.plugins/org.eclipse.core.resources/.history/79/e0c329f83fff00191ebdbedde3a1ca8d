@@ -1,0 +1,253 @@
+/*
+ * This program is a shell for the CS4513 Individual Project
+ * OU 2019 Fall Semester CS 4513-001
+ * Author: Treyson Martin
+ * This program simple passes commands from the user and sends them 
+ * to a Azure DB to execute queries like insert, update, select, and delete commands
+ */
+
+import java.sql.*;
+import java.util.*;
+
+public class Program 
+{
+	// Connect to database
+	 final static String hostName = "mart3422-sql-server.database.windows.net";
+	 final static String dbName = "cs-dsa-4513-sql-db";
+	 final static String user = "mart3422";
+	 final static String password = "Atticus666418!";
+	 final static String url =
+	String.format("jdbc:sqlserver://%s:1433;database=%s;user=%s;password=%s;encrypt=true;host"
+	+ "NameInCertificate=*.database.windows.net;loginTimeout=30;",
+	 hostName, dbName, user, password);
+	
+	public static void main(String[] args) 
+	{
+		//Display welcome message and call method that prints out options.
+		System.out.println("Welcome to JS Accounting System.");
+		System.out.println("Below are options 1-18 that you can use.");
+		
+		Scanner scanner = new Scanner(System.in);
+		int option = 0;
+		do 
+		{
+			DisplayOptions();
+			
+			option = scanner.nextInt();
+			scanner.nextLine();
+
+			switch(option)
+			{
+				case 1:
+					InsertCustomer(0);
+					break;
+				case 2:
+					InsertDepartment(0);
+					break;
+				case 3:
+					InsertAssemblyInfo();
+					break;
+				case 4:
+					InsertProcess();
+					break;
+				case 5:
+					break;
+				case 6:
+					break;
+				case 7:
+					break;
+				case 8:
+					break;
+				case 9:
+					break;
+				case 10:
+					break;
+				case 11:
+					break;
+				case 12:
+					break;
+				case 13:
+					break;
+				case 14:
+					break;
+				case 15:
+					break;
+				case 16:
+					break;
+				case 17:
+					break;
+				case 18:
+					break;
+				default:
+					System.out.println("Invalid Option.\nSelect from Option below.");
+			}
+			
+		}
+		while(option != 18);
+
+		//Ending program.
+		System.out.println("Exiting...\nHave a good day!");
+		System.exit(0);
+	}
+	//Option 4 enter process information followed by department information for supervision.
+	public static void InsertProcessInfo()
+	{
+		try 
+		{
+			String procType = "";
+			String method = "";
+			String machineType = "";
+			Scanner sc = new Scanner(System.in);
+			System.out.print("Enter Process Id: ");
+			int procId = sc.nextInt();
+			sc.nextLine(); //buffer out
+			System.out.println("Enter the type: 1)Paint 2)Fit 3)Cut. Type number");
+			int type = sc.nextInt();
+			sc.nextLine();
+			switch(type)
+			{
+			//Paint type
+			case 1:
+				System.out.print("Enter paint type: ");
+				procType = sc.nextLine();
+				System.out.print("Enter method: ");
+				method = sc.nextLine();
+				break;
+			//Fit type
+			case 2:
+				System.out.print("Enter fit type: ");
+				procType = sc.nextLine();
+				break;
+			//Cut type	
+			case 3:
+				System.out.print("Enter the cut type: ");
+				procType = sc.nextLine();
+				System.out.print("Enter the machine type: ");
+				machineType = sc.nextLine();
+				break;
+			default:
+				System.out.println("Incorrect type for process.");
+			}
+		}
+		catch(Exception ex) 
+		{
+			System.out.println("Error in InsertProcessInfo(). Error: " + ex.toString());
+		}
+	}
+	
+	//Option 3 Enter Assembly Info.
+	public static void InsertAssemblyInfo()
+	{
+		try
+		{
+			Scanner sc = new Scanner(System.in);
+			System.out.print("Enter Assembly Id: ");
+			int assId = sc.nextInt();
+			sc.nextLine();
+			System.out.print("Enter Date Ordered: ");
+			String dateOrdered = sc.nextLine();
+			System.out.print("Enter Assembly Details: ");
+			String details = sc.nextLine();
+			System.out.print("Enter Customer Name: ");
+			String custName = sc.nextLine();
+			
+			System.out.println("Inputting following information...");
+			System.out.println("Assembly Id: " + assId + "\nDate Ordered:" + dateOrdered
+					+ "\nAssembly Details: " + details + "\nCustomer Name: " + custName);
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Error in the InsertAssemblyInfo. Error: " + ex.toString());
+		}
+	}
+	
+	//Option 2 Enter Department Information.
+	public static void InsertDepartment(int flag)
+	{
+		try 
+		{
+			Scanner sc = new Scanner(System.in);
+			System.out.print("Enter Department: ");
+			int deptNum = sc.nextInt();
+			sc.nextLine(); //buffer out.
+			if(deptNum != -1)
+			{
+				System.out.print("Enter Department data: ");
+				String deptData = sc.nextLine();
+				
+				System.out.println("Inputting following information...");
+				System.out.println("Department Number: " + deptNum + "\nDepartment Data: "
+						+ deptData);
+			}
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Error in InsertDepartment. Error: " + ex.toString());
+			InsertDepartment(1);
+		}
+	}
+	
+	//Option 1 Enter Customer information
+	public static void InsertCustomer(int flag)
+	{
+		try 
+		{
+			if(flag > 0)
+				System.out.println("Type exit to go back to options");
+			
+			Scanner sc = new Scanner(System.in);
+			System.out.print("\nPlease input Customer name: ");
+			String custName = sc.nextLine();
+			
+			if(!custName.toLowerCase().equals("exit"))
+			{
+				System.out.print("\nPlease input Customer address: ");
+				String address = sc.nextLine();
+				System.out.print("\nPlease input Customer category (1-10): ");
+				int category = sc.nextInt();
+				sc.nextLine(); //buffer out.
+				
+				System.out.println("Inputing following information...");
+				System.out.println("Customer Name: " + custName + "\nAddress: " + address
+						+ "\nCategory: " + category);
+			}
+			//sc.close();  //close stream.
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Error in InsertCustomer. Error: " + ex.toString());
+			InsertCustomer(1); //Going back to input.
+		}
+	}
+	
+	//Displays the list of options.
+	public static void DisplayOptions() 
+	{
+		System.out.println("\n(1) Enter a new customer");
+		System.out.println("(2) Enter a new department");
+		System.out.println("(3) Enter new Assembly; REQUIRED: Customer_Name, "
+				+ " Assembly_Details, Assembly_Id, Date_Ordered");
+		System.out.println("(4) Enter new Process_Id and Department Information");
+		System.out.println("(5) Create new Account and Setup");
+		System.out.println("(6) Enter new Job; REQUIRED: Job_no, Assembly_id,"
+				+ " Process_id, Date_of_Job_Started");
+		System.out.println("(7) Enter Job Completion Date and Type of Job");
+		System.out.println("(8) Enter Transaction Information");
+		System.out.println("(9) Display Assembly Cost; REQUIRED: Assembly_Id");
+		System.out.println("(10) Display total Labor time of"
+				+ " Job; REQUIRED: Department_Number and Date_Completed");
+		System.out.println("(11) Display Processes and their Department;"
+				+ " REQUIRED: Process_Id");
+		System.out.println("(12) Display Completed Jobs; REQUIRED: Date_Completed"
+				+ " and Department_Number");
+		System.out.println("(13) Display Customers based on category");
+		System.out.println("(14) Delete Cut-Jobs; REQUIRED: Job_no and Date_Range");
+		System.out.println("(15) Change color of a Paint-Job");
+		System.out.println("(16) Import: Enter new customers from a data file "
+				+ " until the file is empty");
+		System.out.println("(17) Export: Retrieve customers whose category is in a given"
+				+ " range");
+		System.out.println("(18) Quit");
+	}
+
+}
