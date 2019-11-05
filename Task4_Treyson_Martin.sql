@@ -131,6 +131,12 @@ CREATE TABLE Account_Process
 	CHECK (cost >= 0),
 );
 
+CREATE TABLE Orders
+(
+	cust_name varchar(32) PRIMARY KEY,
+	assembly_id int FOREIGN KEY REFERENCES Assembly(assembly_id)
+);
+
 CREATE TABLE Manufactures
 (
 	assembly_id int PRIMARY KEY,

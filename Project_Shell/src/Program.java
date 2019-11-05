@@ -52,7 +52,6 @@ public class Program
 					break;
 				case 4:
 					InsertProcessInfo();
-					InsertDepartment(0);
 					break;
 				case 5:
 					CreateAccount();
@@ -178,6 +177,8 @@ public class Program
 	{
 		try 
 		{
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+
 			Scanner sc = new Scanner(System.in);
 			System.out.print("Enter Account Number: ");
 			int accNum = sc.nextInt();
@@ -206,7 +207,10 @@ public class Program
 				System.out.println("Incorrect type for process.");
 			}
 		}
-		catch (Exception ex){}
+		catch (Exception ex)
+		{
+			System.out.println("Error in CreateAccount(). Error: " + ex.toString());
+		}
 	}
 	
 	//Option 4 enter process information followed by department information for supervision.
@@ -214,6 +218,10 @@ public class Program
 	{
 		try 
 		{
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+			String sql1 = "";
+			String sql2 = "";
+			
 			String procType = "";
 			String method = "";
 			String machineType = "";
@@ -232,11 +240,16 @@ public class Program
 				procType = sc.nextLine();
 				System.out.print("Enter method: ");
 				method = sc.nextLine();
+				sql2 = "INSERT INTO Process_Paint "
+						+ "VALUES (" + procId + ", '', '" + procType + "', '" 
+						+ method + "')";
 				break;
 			//Fit type
 			case 2:
 				System.out.print("Enter fit type: ");
 				procType = sc.nextLine();
+				sql2 = "INSERT INTO Process_Fit "
+						+ "VALUES (" + procId + ", '', '" + procType + "')";
 				break;
 			//Cut type	
 			case 3:
@@ -244,10 +257,41 @@ public class Program
 				procType = sc.nextLine();
 				System.out.print("Enter the machine type: ");
 				machineType = sc.nextLine();
+				sql2 = "INSERT INTO Process_Cut "
+						+ "VALUES (" + procId + ", '', '" + procType + "', '" 
+						+ machineType + "')";
 				break;
 			default:
 				System.out.println("Incorrect type for process.");
 			}
+			//Two sql insertion querys for the main table and tables related.
+			sql1 = "INSERT INTO Processes VALUES (" + procId + ",'')";
+			
+			//Now input department info. Insert into department and supervises table.
+			System.out.print("Enter Department: ");
+			int deptNum = sc.nextInt();
+			sc.nextLine(); //buffer out.
+			System.out.print("Enter Department data: ");
+			String deptData = sc.nextLine();
+			
+			String sql3 = "INSERT INTO Department VALUES (" + deptNum + ",'" 
+					+ deptData + "')";
+			
+			String sql4 = "INSERT INTO Supervises VALUES (" + deptNum + ", " 
+			+ procId + ", '')"; 
+					
+			/*
+			System.out.println(sql1); //debug
+			System.out.println(sql2); //debug
+			System.out.println(sql3); //debug
+			System.out.println(sql4); //debug
+			*/	
+			Statement statement = connection.createStatement();
+			statement.execute(sql1); //execute insert query.
+			statement.execute(sql2); //execute insert query.
+			statement.execute(sql3); //execute insert query.
+			statement.execute(sql4); //execute insert query.
+			System.out.println("Insertions Successful");
 		}
 		
 		catch(Exception ex) 
@@ -261,6 +305,8 @@ public class Program
 	{
 		try
 		{
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+
 			Scanner sc = new Scanner(System.in);
 			System.out.print("Enter Assembly Id: ");
 			int assId = sc.nextInt();
@@ -272,15 +318,32 @@ public class Program
 			System.out.print("Enter Customer Name: ");
 			String custName = sc.nextLine();
 			
+			/*
+			//debug
 			System.out.println("Inputting following information...");
 			System.out.println("Assembly Id: " + assId + "\nDate Ordered:" + dateOrdered
 					+ "\nAssembly Details: " + details + "\nCustomer Name: " + custName);
+			*/
+			
+			//Two sql insertion querys for the main table and tables related.
+			String sql1 = "INSERT INTO Assembly VALUES (" + assId + ",'" 
+					+ dateOrdered + "', '" + details + "')";
+			
+			String sql2 = "INSERT INTO Orders VALUES ('" + custName + "', " + assId + ")";
+			//System.out.println(sql1); //debug
+			//System.out.println(sql2); //debug
+					
+			Statement statement = connection.createStatement();
+			statement.execute(sql1); //execute insert query.
+			statement.execute(sql2); //execute insert query.
+			System.out.println("Insertions Successful");
 		}
 		catch(Exception ex)
 		{
 			System.out.println("Error in the InsertAssemblyInfo. Error: " + ex.toString());
 		}
 	}
+	
 	
 	//Option 2 Enter Department Information.
 	public static void InsertDepartment(int flag)
