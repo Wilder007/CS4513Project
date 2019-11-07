@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 public class Program 
 {
@@ -149,27 +150,323 @@ public class Program
 	
 	//Option 10 Retrieve labor time based on department and it's by jobs completed.
 	public static void RetrieveDepLaborTime()
-	{}
+	{
+		try 
+		{
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+			Scanner sc = new Scanner(System.in);
+			
+			System.out.print("Enter Department Number: ");
+			int deptNum = sc.nextInt();
+			sc.nextLine(); //clear buffer.
+			
+			String sql1 = "SELECT job_no FROM Supervises WHERE dept_num = " + deptNum;
+			Statement statement = connection.createStatement();
+			ResultSet resultSet = statement.executeQuery(sql1); //execute select query.
+			List<Integer> jobNos = new ArrayList<Integer>();
+			int laborTime = 0; //initialize variable.
+			while(resultSet.next())
+			{
+				jobNos.add(resultSet.getInt("job_no")); //populate the list.
+			}
+			//Create String from jobNos list. This will be the WHERE clause.
+			String whereClause = "WHERE job_no in (";
+			Iterator<Integer> iterator = jobNos.iterator(); 
+			while(iterator.hasNext())
+			{
+				Integer i = iterator.next();
+				whereClause += i.toString();
+				whereClause += ", ";
+			}
+			whereClause += ")";
+			
+			String sql2 = "SELECT labor_time FROM Job_Cut " + whereClause;
+			String sql3 = "SELECT labor_time FROM Job_Fit " + whereClause;
+			String sql4 = "SELECT labor_time FROM Job_Paint " + whereClause;
+
+			//debug.
+			System.out.println(sql2);
+			System.out.println(sql3);
+			System.out.println(sql4);
+
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Error in RetrieveDepLaborTime(). Error: " + ex.toString());
+		}
+	}
 	
 	//Option 9 Retrieve Assembly costs by id.
 	public static void RetrieveAssemblyCost()
-	{}
+	{
+		try 
+		{
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+			Scanner sc = new Scanner(System.in);
+			
+			System.out.print("Enter Assembly Id: ");
+			int assId = sc.nextInt();
+			
+			String sql = "SELECT acc_num FROM Has1 WHERE assembly_id = " + assId;
+			Statement statement = connection.createStatement();
+			ResultSet resultSet = statement.executeQuery(sql); //execute select query.
+			int accNum = 0;
+			while(resultSet.next())
+			{
+				accNum = resultSet.getInt("acc_num");
+			}
+			
+			sql = "SELECT cost FROM Account_Assembly WHERE acc_num = " + accNum;
+			resultSet = statement.executeQuery(sql); //execute select query.
+			float cost = 0;
+			while(resultSet.next())
+			{
+				cost = resultSet.getFloat("cost");
+			}
+			
+			System.out.println("Assembly Id: " + assId + "; Costs: " + cost);
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Error in RetrieveAssemblyCost(). Error: " + ex.toString());
+		}
+	}
 	
 	//Option 8 Insert Transaction Information 
 	public static void InsertTransactionInfo()
 	{
-		
+		try 
+		{
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+			Scanner sc = new Scanner(System.in);
+			System.out.print("Enter Transaction No: ");
+			int transNo = sc.nextInt();
+			sc.nextLine(); //clear buffer.
+			System.out.print("Enter sup-cost: ");
+			double cost = sc.nextDouble();
+			sc.nextLine(); //clear buffer.
+			
+			System.out.print("Enter job no for transaction: ");
+			int jobno = sc.nextInt();
+			sc.nextLine();
+			
+			System.out.print("Enter account id: ");
+			int accId = sc.nextInt();
+			sc.nextLine(); //clear buffer.
+			
+			String sql1 = "INSERT INTO [Transaction] VALUES (" + transNo +  ", " + cost + ")";
+			String sql2 = "INSERT INTO Records VALUES (" + jobno +  ", " + transNo + ")";
+			String sql3 = "INSERT INTO Updates VALUES (" + transNo +  ", " + accId + ")";
+			//Added all 3 though only one will update since the primary keys are unique
+			String sql4 = "UPDATE Account_Assembly SET cost = " + cost + " WHERE acc_num = " + accId;
+			String sql5 = "UPDATE Account_Assembly SET cost = " + cost + " WHERE acc_num = " + accId;
+			String sql6 = "UPDATE Account_Assembly SET cost = " + cost + " WHERE acc_num = " + accId;
+			
+			Statement statement = connection.createStatement();
+			statement.execute(sql1); //execute insert query.
+			statement.execute(sql2); //execute insert query.
+			statement.execute(sql3); //execute insert query.
+			statement.execute(sql4); //execute insert query.
+			statement.execute(sql5); //execute insert query.
+			statement.execute(sql6); //execute insert query.
+			System.out.println("Insertions/Updates Successful");
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Error in InsertTransactionInfo(). Error: "+ ex.toString());
+		}
 	}
 	
 	//Option 7 Update job with completion date and type info.
 	public static void ConfirmJobCompletion()
 	{
-		
+		try 
+		{
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+			String sql1 = "";
+			String sql2 = "";
+			String sql3 = "";
+			Scanner sc = new Scanner(System.in);
+			System.out.print("Enter JobNo: ");
+			int jobNo = sc.nextInt();
+			
+			//select statement to se if job exists.
+			sql1 = "select job_no from Job WHERE job_no = " + jobNo;
+			
+			Statement statement = connection.createStatement();
+			Statement statement2 = connection.createStatement();
+			Statement statement3 = connection.createStatement();
+			ResultSet resultSet = statement.executeQuery(sql1); //execute select query.
+			ResultSet resultSet2 = null;
+			ResultSet resultSet3 = null;
+			//See if in job table if so then loop through other 3 to find job table.
+			int counter = 1; //1 for paint
+			int result = 0;
+			while(resultSet.next())
+			{
+				result = resultSet.getInt("job_no");	
+			}
+			if(result == jobNo)
+			{
+				int r2 = 0;
+				System.out.println("Job Found...");
+				sql1 = "SELECT job_no from Job_Paint WHERE job_no = " + jobNo; //new query.
+				resultSet2 = statement2.executeQuery(sql1);
+				while(resultSet2.next())
+				{
+					r2 = resultSet2.getInt("job_no");
+				}
+				if(r2 != jobNo)
+				{
+					int r3 = 0;
+					counter++; //2 for fit
+					sql1 = "SELECT job_no from Job_Fit WHERE job_no = " + jobNo;
+					resultSet3 = statement3.executeQuery(sql1);
+					while(resultSet3.next())
+					{
+						r3 = resultSet3.getInt("job_no");
+					}
+					if(r3 != jobNo)
+					{
+						counter++; //3 for cut
+					}
+				}
+			}
+			else 
+			{
+				System.out.println("Job not found.");
+				return; //exit function.
+			}
+			
+			sc.nextLine(); //buffer cleared.
+			System.out.print("Enter date completed: ");
+			String dateComp = sc.nextLine();
+			
+			sql2 = "UPDATE Job set date_completed = '" + dateComp + "' where job_no = " + jobNo;
+			if(counter == 1)
+			{
+				System.out.print("Enter Paint Color: ");
+				String color = sc.nextLine();
+				System.out.print("Enter Volume: ");
+				int volume = sc.nextInt();
+				sc.nextLine(); //clear buffer.
+				System.out.print("Enter Labor Time: ");
+				int laborTime = sc.nextInt();
+				sc.nextLine(); //clear buffer.
+				sql3 = "UPDATE Job_Paint set date_completed = '" + dateComp
+						+ "', color = '" + color 
+						+ "', volume = " + volume 
+						+ ", labor_time = " + laborTime +" where job_no = " + jobNo;
+			}
+			else if(counter == 2)
+			{
+				System.out.print("Enter Labor Time: ");
+				int laborTime = sc.nextInt();
+				sc.nextLine(); //clear buffer.
+				sql3 = "UPDATE Job_Fit set date_completed = '" + dateComp
+						+ "', labor_time = " + laborTime + " where job_no = " + jobNo;
+			}
+			else if(counter == 3)
+			{
+				System.out.print("Enter Machine Type: ");
+				String machType = sc.nextLine();
+				System.out.print("Enter Time Used: ");
+				int timeUsed = sc.nextInt();
+				sc.nextLine(); //clear buffer.
+				System.out.print("Enter Material Used: ");
+				String material = sc.nextLine();
+				System.out.print("Enter Labor Time: ");
+				int laborTime = sc.nextInt();
+				sc.nextLine(); //clear buffer.
+				sql3 = "UPDATE Job_Cut set date_completed = '" + dateComp 
+						+ "', machine_type = '" + machType 
+						+ "', time_used = " + timeUsed 
+						+ ", material_used = '" + material 
+						+ "', labor_time = " + laborTime + " where job_no = " + jobNo;	
+			}
+			
+			//Debug.
+			//System.out.println(sql1);
+			//System.out.println(sql2);
+			//System.out.println(sql3);
+
+			statement.execute(sql2); //execute insert query.
+			statement.execute(sql3); //execute insert query.
+			System.out.println("Insertions Successful");
+		}
+		catch (Exception ex)
+		{
+			System.out.println("Error in ConfirmJobCompletion(). Error: " + ex.toString());
+		}
 	}
 	
 	//Option 6 insert job information
 	public static void InsertJobInfo() 
 	{
+		try
+		{
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+			Scanner sc = new Scanner(System.in);
+			
+			String sql1 = "";
+			String sql2 = "";
+			String sql3 = "";
+			String sql4 = "";
+			String tableName = "";
+			System.out.print("Enter Job No: ");
+			int jobNo = sc.nextInt();
+			System.out.print("Enter Job Type: 1)Cut 2)Paint 3)Fit Type Number. ");
+			int type = sc.nextInt();
+			sc.nextLine(); //clear buffer.
+			System.out.print("Enter Date for Job Started: ");
+			String dateStarted = sc.nextLine();
+			System.out.print("Enter Process Id for Job: ");
+			int procId = sc.nextInt();
+			sc.nextLine(); //clear buffer.
+			System.out.print("Enter Assembly Id for Job: ");
+			int assId = sc.nextInt();
+			sc.nextLine();
+			
+			switch(type)
+			{
+			case 1:
+				tableName = "Job_Cut";
+				break;
+			case 2:
+				tableName = "Job_Paint";
+				break;
+			case 3:
+				tableName = "Job_Fit";
+				break;
+			default:
+				System.out.println("Incorrect Job Type.");
+				return;  //break out of function.
+			}
+			
+			sql1 = "INSERT INTO Job (job_no, date_started) VALUES (" + jobNo + ", '" + dateStarted + "')";
+			sql2 = "INSERT INTO " + tableName  +" (job_no, date_started) VALUES (" + jobNo + ", '" + dateStarted + "')";
+			sql3 = "INSERT INTO Assigned VALUES (" + procId + ", " + jobNo + ")";
+			sql4 = "INSERT INTO Manufactures VALUES (" + assId + ", " + procId
+					+ ", " + jobNo + ")";
+			/*
+			//debug.
+			System.out.println(sql1);
+			System.out.println(sql2);
+			System.out.println(sql3);
+			System.out.println(sql4);
+			*/
+			Statement statement = connection.createStatement();
+			statement.execute(sql1); //execute insert query.
+			statement.execute(sql2); //execute insert query.
+			statement.execute(sql3); //execute insert query.
+			statement.execute(sql4); //execute insert query.
+			System.out.println("Insertions Successful");
+			
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Error in InsertJobInfo(). Error: " + ex.toString());
+		}
 	}
 	
 	//Option 5 Create account and associate it to appropriate thing.
@@ -178,7 +475,11 @@ public class Program
 		try 
 		{
 			Connection connection = DriverManager.getConnection(url); //sql connection.
-
+			String sql1 = "";
+			String sql2 = "";
+			String sql3 = "";
+			long millis=System.currentTimeMillis();  
+			java.sql.Date date=new java.sql.Date(millis);
 			Scanner sc = new Scanner(System.in);
 			System.out.print("Enter Account Number: ");
 			int accNum = sc.nextInt();
@@ -186,26 +487,47 @@ public class Program
 			System.out.println("Enter type of account: 1)Process 2)Assembly 3)Department. Enter a number");
 			int type = sc.nextInt();
 			sc.nextLine();
+			int procId = 0;
+			int assId = 0;
+			int deptNum = 0;
 			switch(type)
 			{
 			//Process Account
 			case 1:
 				System.out.print("Enter process id: ");
-				int procId = sc.nextInt();
+				procId = sc.nextInt();
+				sql2 = "INSERT INTO Account_Process VALUES ("+ accNum + ", '" + date + "', 0)";
+				sql3 = "INSERT INTO Has2 VALUES (" + procId + ", " + accNum + ")";
 				break;
 			//Assembly Account
 			case 2:
 				System.out.print("Enter Assembly id: ");
-				int assId = sc.nextInt();
+				assId = sc.nextInt();
+				sql2 = "INSERT INTO Account_Assembly VALUES ("+ accNum + ", '" + date + "', 0)";
+				sql3 = "INSERT INTO Has1 VALUES (" + assId + ", " + accNum + ")";
 				break;
 			//Department Account	
 			case 3:
 				System.out.print("Enter Department number: ");
-				int deptNum = sc.nextInt();
+				deptNum = sc.nextInt();
+				sql2 = "INSERT INTO Account_Department VALUES ("+ accNum + ", '" + date + "', 0)";
+				sql3 = "INSERT INTO Has3 VALUES (" + deptNum + ", " + accNum + ")";
 				break;
 			default:
 				System.out.println("Incorrect type for process.");
 			}
+			
+			sql1 = "INSERT INTO Account VALUES (" + accNum + ", '" + date + "')";
+			
+			//System.out.println(sql1); //debug
+			//System.out.println(sql2); //debug
+			//System.out.println(sql3); //debug
+				
+			Statement statement = connection.createStatement();
+			statement.execute(sql1); //execute insert query.
+			statement.execute(sql2); //execute insert query.
+			statement.execute(sql3); //execute insert query.
+			System.out.println("Insertions Successful");
 		}
 		catch (Exception ex)
 		{
