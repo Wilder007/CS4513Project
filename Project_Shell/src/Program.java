@@ -134,19 +134,211 @@ public class Program
 	}
 	
 	//Option 15 Update color on Paint Job.
-	public static void UpdatePaintJob() {}
+	public static void UpdatePaintJob() 
+	{
+		try {}
+		catch(Exception ex) {}
+	}
 	
 	//Option 14 Delete Cut jobs based on date range.
-	public static void DeleteCutJobs() {}
+	public static void DeleteCutJobs() 
+	{
+		try 
+		{
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+			Scanner sc = new Scanner(System.in);
+		}
+		catch(Exception ex) 
+		{
+			System.out.println("Error in DeleteCutJobs(). Error: " + ex.toString());
+		}
+	}
 	
 	//Option 13 Retrieve Customers based on category
-	public static void RetrieveCustomers() {}
+	public static void RetrieveCustomers() 
+	{
+		try 
+		{
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+			Scanner sc = new Scanner(System.in);
+			System.out.print("Enter lower category: ");
+			int lowCat = sc.nextInt();
+			sc.nextLine();
+			System.out.print("Enter high category: ");
+			int highCat = sc.nextInt();
+			sc.nextLine();
+			
+			String sql = "SELECT cust_name FROM Customers WHERE"
+					+ " category between " + lowCat + " AND " + highCat 
+					+ " ORDER by cust_name";
+			
+			//debug
+			//System.out.println(sql);
+			
+			Statement statement = connection.createStatement();
+			ResultSet resultSet = statement.executeQuery(sql);
+			while(resultSet.next())
+			{
+				System.out.println("Customer: " + resultSet.getString("cust_name"));
+			}
+		}
+		catch(Exception ex) 
+		{
+			System.out.println("Error in RetrieveCustomers(). Error: " + ex.toString());
+
+		}
+	}
 	
 	//Option 12 Get jobs based on dept and date completed
-	public static void RetrieveJobsCompleted(){}
+	public static void RetrieveJobsCompleted()
+	{
+		try 
+		{
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+			Scanner sc = new Scanner(System.in);
+			
+			System.out.print("Enter Date Completed: ");
+			String dateCompleted  = sc.nextLine();
+			System.out.print("Enter Department Supervising: ");
+			int deptNum = sc.nextInt();
+			sc.nextLine(); //clear buffer.
+			
+			String sql1 = "SELECT job_no FROM Supervises WHERE dept_num = " + deptNum;
+			Statement statement = connection.createStatement();
+			ResultSet rs1 = statement.executeQuery(sql1);
+			List<Integer> jobNos = new ArrayList<Integer>();
+			while(rs1.next())
+			{
+				jobNos.add(rs1.getInt("job_no")); //populate the list.
+			}
+			//Create String from jobNos list. This will be the WHERE clause.
+			String whereClause = "WHERE job_no in (";
+			Iterator<Integer> iterator = jobNos.iterator(); 
+			while(iterator.hasNext())
+			{
+				Integer i = iterator.next();
+				whereClause += i.toString();
+				whereClause += ", ";
+			}
+			whereClause += " -1) AND date_completed = '" + dateCompleted + "'"; //-1 is breakup of the where clase.	
+			String sql2 = "SELECT * FROM Job_Cut " + whereClause;
+			String sql3 = "SELECT * FROM Job_Fit " + whereClause;
+			String sql4 = "SELECT * FROM Job_Paint " + whereClause;
+			
+			ResultSet rs2 = statement.executeQuery(sql2);
+			int assId = 0; //for assembly Id;
+			while(rs2.next()) //run for Job_Cut
+			{
+				int jobNo = rs2.getInt("job_no");
+				String sql = "SELECT assembly_id FROM Manufactures WHERE job_no = " + jobNo;
+				Statement st2 = connection.createStatement();
+				ResultSet rs = st2.executeQuery(sql);
+				while(rs.next())
+				{
+					assId = rs.getInt("assembly_id");
+				}
+				System.out.println("Job No: " + jobNo
+						+ "; Date Started: " + rs2.getString("date_started")
+						+ "; Date Completed: " + rs2.getString("date_completed")
+						+ "; Machine Type: " + rs2.getString("machine_type")
+						+ "; Time Used: " + rs2.getInt("time_used")
+						+ "; Material Used: " + rs2.getString("material_used")
+						+ "; Labor Time: " + rs2.getInt("labor_time"));
+				
+			}
+			
+			ResultSet rs3 = statement.executeQuery(sql3);
+			while(rs3.next()) //for Job_Fit
+			{
+				int jobNo = rs2.getInt("job_no");
+				String sql = "SELECT assembly_id FROM Manufactures WHERE job_no = " + jobNo;
+				Statement st2 = connection.createStatement();
+				ResultSet rs = st2.executeQuery(sql);
+				while(rs.next())
+				{
+					assId = rs.getInt("assembly_id");
+				}
+				System.out.println("Job No: " + jobNo
+						+ "; Date Started: " + rs2.getString("date_started")
+						+ "; Date Completed: " + rs2.getString("date_completed")
+						+ "; Labor Time: " + rs2.getInt("labor_time"));			
+			}
+			
+			ResultSet rs4 = statement.executeQuery(sql4);
+			while(rs4.next()) //For Job_Paint
+			{
+				int jobNo = rs2.getInt("job_no");
+				String sql = "SELECT assembly_id FROM Manufactures WHERE job_no = " + jobNo;
+				Statement st2 = connection.createStatement();
+				ResultSet rs = st2.executeQuery(sql);
+				while(rs.next())
+				{
+					assId = rs.getInt("assembly_id");
+				}
+				System.out.println("Job No: " + jobNo
+						+ "; Date Started: " + rs2.getString("date_started")
+						+ "; Date Completed: " + rs2.getString("date_completed")
+						+ "; Color: " + rs2.getString("color")
+						+ "; Volume: " + rs2.getInt("volume")
+						+ "; Labor Time: " + rs2.getInt("labor_time"));			
+			}
+		}
+		catch(Exception ex) 
+		{
+			System.out.println("Error in RetrieveJobsCompleted(). Error: " + ex.toString());
+		}
+	}
 	
 	//Option 11 get processes from given assembly id.
-	public static void RetrieveProcesses() {}
+	public static void RetrieveProcesses() 
+	{
+		try 
+		{
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+			Scanner sc = new Scanner(System.in);
+			
+			System.out.print("Enter Assembly Id: ");
+			int assId = sc.nextInt();
+			sc.nextLine();
+			
+			String sql1 = "SELECT process_id FROM Manufactures WHERE assembly_id = " + assId;
+			Statement statement = connection.createStatement();
+			ResultSet resultSet = statement.executeQuery(sql1); //execute select query.
+			List<Integer> processIds = new ArrayList<Integer>();
+			int laborTime = 0; //initialize variable.
+			while(resultSet.next())
+			{
+				processIds.add(resultSet.getInt("job_no")); //populate the list.
+			}
+			//Create String from jobNos list. This will be the WHERE clause.
+			String whereClause = "WHERE process_id in (";
+			Iterator<Integer> iterator = processIds.iterator(); 
+			while(iterator.hasNext())
+			{
+				Integer i = iterator.next();
+				whereClause += i.toString();
+				whereClause += ", ";
+			}
+			whereClause += " -1) AND process_data like '%passed%' "; //-1 is breakup of the where clase.
+
+			String sql2 = "SELECT * FROM Processes " + whereClause;
+			
+			//debug.
+			System.out.println(sql2);
+			
+			ResultSet rs2 = statement.executeQuery(sql2);
+			System.out.println("Processes passed by Assembly: " + assId);
+			while(rs2.next())
+			{
+				System.out.println("Process Id: " + rs2.getInt("process_id")
+				+ "; Process Data: " + rs2.getString("process_data"));
+			}
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Error in RetrieveProcesses(). Error: " + ex.toString());
+		}
+	}
 	
 	//Option 10 Retrieve labor time based on department and it's by jobs completed.
 	public static void RetrieveDepLaborTime()
@@ -159,6 +351,9 @@ public class Program
 			System.out.print("Enter Department Number: ");
 			int deptNum = sc.nextInt();
 			sc.nextLine(); //clear buffer.
+			
+			System.out.print("Enter Completion Date: ");
+			String dateComplete = sc.nextLine();
 			
 			String sql1 = "SELECT job_no FROM Supervises WHERE dept_num = " + deptNum;
 			Statement statement = connection.createStatement();
@@ -178,16 +373,36 @@ public class Program
 				whereClause += i.toString();
 				whereClause += ", ";
 			}
-			whereClause += ")";
+			whereClause += " -1) AND date_completed = '" + dateComplete + "'"; //-1 is breakup of the where clase.
 			
 			String sql2 = "SELECT labor_time FROM Job_Cut " + whereClause;
 			String sql3 = "SELECT labor_time FROM Job_Fit " + whereClause;
 			String sql4 = "SELECT labor_time FROM Job_Paint " + whereClause;
-
+			
+			ResultSet rs2 = statement.executeQuery(sql2);
+			while(rs2.next())
+			{
+				laborTime += rs2.getInt("labor_time");
+			}
+			
+			ResultSet rs3 = statement.executeQuery(sql3);
+			while(rs3.next())
+			{
+				laborTime += rs3.getInt("labor_time");
+			}
+			
+			ResultSet rs4 = statement.executeQuery(sql4);
+			while(rs4.next())
+			{
+				laborTime += rs4.getInt("labor_time");
+			}
+			
 			//debug.
-			System.out.println(sql2);
-			System.out.println(sql3);
-			System.out.println(sql4);
+			//System.out.println(sql2);
+			//System.out.println(sql3);
+			//System.out.println(sql4);
+			
+			System.out.println("Department: " + deptNum + "; Total Labor Time: " + laborTime);
 
 		}
 		catch(Exception ex)
@@ -448,6 +663,7 @@ public class Program
 			sql3 = "INSERT INTO Assigned VALUES (" + procId + ", " + jobNo + ")";
 			sql4 = "INSERT INTO Manufactures VALUES (" + assId + ", " + procId
 					+ ", " + jobNo + ")";
+			String sql5 = "UPDATE Supervises set job_no = " + jobNo + "WHERE process_id = " + procId; 
 			/*
 			//debug.
 			System.out.println(sql1);
@@ -460,6 +676,7 @@ public class Program
 			statement.execute(sql2); //execute insert query.
 			statement.execute(sql3); //execute insert query.
 			statement.execute(sql4); //execute insert query.
+			statement.execute(sql5); //execute insert query.
 			System.out.println("Insertions Successful");
 			
 		}
