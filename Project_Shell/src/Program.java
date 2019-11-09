@@ -7,11 +7,15 @@
  */
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
+
 
 public class Program 
 {
@@ -115,17 +119,67 @@ public class Program
 		Scanner sc = new Scanner(System.in);
 		try 
 		{
-			System.out.print("Input file name (Include .csv): ");
-			//sc.nextLine();
-			//File file = new File(userFile);
-			BufferedReader br = new BufferedReader(new FileReader("cust.csv"));
-			while((line = br.readLine()) != null)//goes to EOF
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+			Statement statement = connection.createStatement();
+			
+			if(flag == 0)
 			{
-				String[] customers = line.split(splitBy);
-				System.out.println("Customer: Name = " + customers[0] + " Address: " +
-				customers[1] + " Category: " + customers[2]);  //debug.
+				System.out.print("Input file name (Include .csv): ");
+				userFile = sc.nextLine();
+				File file = new File(userFile);
+				BufferedReader br = new BufferedReader(new FileReader(file));
+				while((line = br.readLine()) != null)//goes to EOF
+				{
+					String[] customers = line.split(splitBy);
+					//System.out.println("Customer: Name = " + customers[0] + " Address: " +
+					//customers[1] + " Category: " + customers[2]);  //debug.
+					
+					String sql = "INSERT INTO Customers VALUES ('" 
+							+ customers[0] + "', '" 
+							+ customers[1] + "', " 
+							+ customers[2] + ")";
+					
+					//debug.
+					//System.out.println(sql);
+					statement.execute(sql);
+				}
+				System.out.println("Import Successful");
+				br.close();
 			}
-			br.close();
+			else if(flag == 1)
+			{
+				System.out.print("Enter lower category: ");
+				int lowCat = sc.nextInt();
+				sc.nextLine();
+				System.out.print("Enter high category: ");
+				int highCat = sc.nextInt();
+				sc.nextLine();
+				
+				String sql = "SELECT * FROM Customers WHERE"
+						+ " category BETWEEN " + lowCat + " AND " + highCat 
+						+ " ORDER by cust_name";
+				
+				ResultSet rs = statement.executeQuery(sql);
+				int randomNum = (int)(Math.random() * 100000 + 1); //generate random number.
+				String custfile = "customers" + randomNum +".csv";
+				File fl = new File(custfile);
+				
+				BufferedWriter writer = new BufferedWriter(new FileWriter(fl, true));
+				writer.write("Name,Address,Category\n");
+				while(rs.next())
+				{
+					writer.append(rs.getString("cust_name"));
+					writer.append(",");
+					writer.append(rs.getString("address"));
+					writer.append(",");
+					int category = rs.getInt("category");
+					String ct = "" + category;
+					writer.append(ct);
+					writer.append("\n");
+				}
+				 writer.close();
+				 System.out.println("File " + custfile + " created.");
+			}
 		}
 		catch(Exception ex) 
 		{
@@ -136,8 +190,23 @@ public class Program
 	//Option 15 Update color on Paint Job.
 	public static void UpdatePaintJob() 
 	{
-		try {}
-		catch(Exception ex) {}
+		try 
+		{
+			Connection connection = DriverManager.getConnection(url); //sql connection.
+			Scanner sc = new Scanner(System.in);
+			System.out.print("Enter Job No: ");
+			int jobNo = sc.nextInt();
+			sc.nextLine();
+			System.out.print("Update Color of Job: ");
+			String color = sc.nextLine();
+			
+			String sql = "UPDATE Job_Paint SET color = '" + color 
+					+ "' WHERE job_no = " + jobNo;
+		}
+		catch(Exception ex) 
+		{
+			System.out.println("Error in UpdatePaintJob(). Error: " + ex.toString());		
+		}
 	}
 	
 	//Option 14 Delete Cut jobs based on date range.
@@ -147,6 +216,23 @@ public class Program
 		{
 			Connection connection = DriverManager.getConnection(url); //sql connection.
 			Scanner sc = new Scanner(System.in);
+			System.out.print("Enter low job no: ");
+			int lowJobNo = sc.nextInt();
+			sc.nextLine(); //clear buffer
+			
+			System.out.print("Enter high job no: ");
+			int highJobNo = sc.nextInt();
+			sc.nextLine(); //clear buffer.
+			
+			String sql = "Delete from Job_Cut where job_no BETWEEN "
+					+ lowJobNo + " AND " + highJobNo;
+			
+			//debug.
+			//System.out.println(sql);
+			
+			Statement statement = connection.createStatement();
+			statement.execute(sql);
+			System.out.println("Deletions Complete.");
 		}
 		catch(Exception ex) 
 		{
