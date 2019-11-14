@@ -202,6 +202,10 @@ public class Program
 			
 			String sql = "UPDATE Job_Paint SET color = '" + color 
 					+ "' WHERE job_no = " + jobNo;
+			
+			Statement statement = connection.createStatement();
+			statement.execute(sql);
+			System.out.println("Update Complete.");		
 		}
 		catch(Exception ex) 
 		{
@@ -336,7 +340,7 @@ public class Program
 			ResultSet rs3 = statement.executeQuery(sql3);
 			while(rs3.next()) //for Job_Fit
 			{
-				int jobNo = rs2.getInt("job_no");
+				int jobNo = rs3.getInt("job_no");
 				String sql = "SELECT assembly_id FROM Manufactures WHERE job_no = " + jobNo;
 				Statement st2 = connection.createStatement();
 				ResultSet rs = st2.executeQuery(sql);
@@ -345,15 +349,15 @@ public class Program
 					assId = rs.getInt("assembly_id");
 				}
 				System.out.println("Job No: " + jobNo
-						+ "; Date Started: " + rs2.getString("date_started")
-						+ "; Date Completed: " + rs2.getString("date_completed")
-						+ "; Labor Time: " + rs2.getInt("labor_time"));			
+						+ "; Date Started: " + rs3.getString("date_started")
+						+ "; Date Completed: " + rs3.getString("date_completed")
+						+ "; Labor Time: " + rs3.getInt("labor_time"));			
 			}
 			
 			ResultSet rs4 = statement.executeQuery(sql4);
 			while(rs4.next()) //For Job_Paint
 			{
-				int jobNo = rs2.getInt("job_no");
+				int jobNo = rs4.getInt("job_no");
 				String sql = "SELECT assembly_id FROM Manufactures WHERE job_no = " + jobNo;
 				Statement st2 = connection.createStatement();
 				ResultSet rs = st2.executeQuery(sql);
@@ -362,11 +366,11 @@ public class Program
 					assId = rs.getInt("assembly_id");
 				}
 				System.out.println("Job No: " + jobNo
-						+ "; Date Started: " + rs2.getString("date_started")
-						+ "; Date Completed: " + rs2.getString("date_completed")
-						+ "; Color: " + rs2.getString("color")
-						+ "; Volume: " + rs2.getInt("volume")
-						+ "; Labor Time: " + rs2.getInt("labor_time"));			
+						+ "; Date Started: " + rs4.getString("date_started")
+						+ "; Date Completed: " + rs4.getString("date_completed")
+						+ "; Color: " + rs4.getString("color")
+						+ "; Volume: " + rs4.getInt("volume")
+						+ "; Labor Time: " + rs4.getInt("labor_time"));			
 			}
 		}
 		catch(Exception ex) 
@@ -394,7 +398,7 @@ public class Program
 			int laborTime = 0; //initialize variable.
 			while(resultSet.next())
 			{
-				processIds.add(resultSet.getInt("job_no")); //populate the list.
+				processIds.add(resultSet.getInt("process_id")); //populate the list.
 			}
 			//Create String from jobNos list. This will be the WHERE clause.
 			String whereClause = "WHERE process_id in (";
@@ -410,7 +414,7 @@ public class Program
 			String sql2 = "SELECT * FROM Processes " + whereClause;
 			
 			//debug.
-			System.out.println(sql2);
+			//System.out.println(sql2);
 			
 			ResultSet rs2 = statement.executeQuery(sql2);
 			System.out.println("Processes passed by Assembly: " + assId);
@@ -560,8 +564,8 @@ public class Program
 			String sql3 = "INSERT INTO Updates VALUES (" + transNo +  ", " + accId + ")";
 			//Added all 3 though only one will update since the primary keys are unique
 			String sql4 = "UPDATE Account_Assembly SET cost = " + cost + " WHERE acc_num = " + accId;
-			String sql5 = "UPDATE Account_Assembly SET cost = " + cost + " WHERE acc_num = " + accId;
-			String sql6 = "UPDATE Account_Assembly SET cost = " + cost + " WHERE acc_num = " + accId;
+			String sql5 = "UPDATE Account_Process SET cost = " + cost + " WHERE acc_num = " + accId;
+			String sql6 = "UPDATE Account_Department SET cost = " + cost + " WHERE acc_num = " + accId;
 			
 			Statement statement = connection.createStatement();
 			statement.execute(sql1); //execute insert query.
@@ -954,7 +958,7 @@ public class Program
 			String sql1 = "INSERT INTO Assembly VALUES (" + assId + ",'" 
 					+ dateOrdered + "', '" + details + "')";
 			
-			String sql2 = "INSERT INTO Orders VALUES ('" + custName + "', " + assId + ")";
+			String sql2 = "INSERT INTO Orders VALUES (" + assId + ", '" + custName + "')";
 			//System.out.println(sql1); //debug
 			//System.out.println(sql2); //debug
 					
