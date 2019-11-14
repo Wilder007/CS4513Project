@@ -133,14 +133,14 @@ CREATE TABLE Account_Process
 
 CREATE TABLE Orders
 (
-	cust_name varchar(32) PRIMARY KEY,
-	assembly_id int FOREIGN KEY REFERENCES Assembly(assembly_id)
+	assembly_id int PRIMARY KEY,
+	cust_name varchar(32) FOREIGN KEY REFERENCES Customers(cust_name),
 );
 
 CREATE TABLE Manufactures
 (
-	assembly_id int PRIMARY KEY,
-	process_id int FOREIGN KEY REFERENCES Processes(process_id),
+	assembly_id int, 
+	process_id int,
 	job_no int
 );
 
